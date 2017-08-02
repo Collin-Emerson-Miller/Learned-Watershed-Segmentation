@@ -1,0 +1,21 @@
+Version 0.01
+------------
+* Check the root error edge of incorrect nodes with the multithreading module instead
+  of processing them sequentially.
+
+
+Version 0.02
+------------
+* Computing all of the gradients for the root error edges at one time causes `Out of Memory Error`
+    Fix: Root error edge gradients are accumulated in mini batches but still applied in one step.
+        Version 0.021
+        ------------
+        * The current training data is not in the form of batches.
+            Fix: Structured data is not separated into batches.
+Cleanup: Images saved during training are now saved to the "training_images" folder.
+
+
+Version 0.03
+------------
+* Switch segmentation data to Cremi Electron Microscopy Images.
+* Switch functions and classes from the jupyter notebook to a python file.
