@@ -24,20 +24,29 @@ Version 1.03
 * Optimize MSF calculations by calculating all newly disccovered edges at once rather than computing them one at a time.
 
 
-Version 1.04 - Current Version
+Version 1.04
 ------------
 * Instead of computing all of the gradients for the root error edges at once, the gradients are accumulated over mini-batches of at most 32 elements.
+
+
+Version 1.05 - Current Version
+------------
+* Instead of recalculating the path of a node to check the root error edge, save the path to the main image graph while running the MSF and constrianed MSF. 
+* Cleaned out print statements from prims on demand function.
+
+
+
 
 
 
 Backlog
 -------
-* Correct nodes and accuracy are not ouputing the correct values.
-* Switch segmentation data to Cremi Electron Microscopy Images.
-* Switch functions and classes from the jupyter notebook to a python file.
+Feature: Layer the transparent segmentations and the original image for better visualization.
+Fix: Correct nodes and accuracy are not ouputing the correct values.
+Feature: Switch segmentation data to Cremi Electron Microscopy Images.
+Housekeeping: Switch functions and classes from the jupyter notebook to a python file.
 
 
 Known problems
 --------------
-* Root error edge children calculation takes way too long and needs to be optimized.
-* Gradients need to be computed in mini-batches to avoid memory issues.
+* Computing the root error edge children still takes way too long and needs to be optimized.
