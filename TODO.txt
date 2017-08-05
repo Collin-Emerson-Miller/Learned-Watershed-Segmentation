@@ -41,12 +41,18 @@ Feature: Load node's path from the graph rather than calculating it.
 Optimization: Instead of starting a thread for every node, just check the paths.  If the paths are different (i.e the node is incorrect), then start a thread.
 Housekeeping: Cleaned out the print statements from node calculations.
 
+Version 1.07.0 - Current Version
+------------
+Fix: Seeds are placed correctly.
+
+
 
 
 
 
 Backlog
 -------
+Fix: Seeds are placed correctly.
 Optimization: Switch graph backend to igraph and use OpenMP
 Fix: Accumulate the loss instead of calculating it all at once.
 Feature: Layer the transparent segmentations and the original image for better visualization.
