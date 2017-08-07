@@ -47,8 +47,8 @@ Fix: Seeds are placed correctly.
 
 Version 1.07.1 - Current Version
 ------------
-
-
+Housekeeping: remove old graph visualization tools.  They were to memory intensive.
+Optimization: Loss is computed with precomputed altitudes.
 
 
 
@@ -60,14 +60,15 @@ Feature: Layer the transparent segmentation and the original image for better vi
 Fix: Correct nodes and accuracy are not computing the correct values.
 Feature: Switch segmentation data to Cremi Electron Microscopy Images.
 Housekeeping: Switch functions and classes from the jupyter notebook to a python file.
-Housekeeping: remove old graph visualization tools.  They were to memory intensive.
+
 Feature: Accuracy output.
 
 
 Known problems
 --------------
-* Computing the root error edge children still takes way too long and needs to be optimized.
 * Computing the loss with all root error edges at a time uses too much memory and crashes the program.
+* Running the notebook twice causes Value error.
+
 
 
 
