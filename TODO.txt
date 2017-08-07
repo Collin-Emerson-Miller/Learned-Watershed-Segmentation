@@ -41,10 +41,12 @@ Feature: Load node's path from the graph rather than calculating it.
 Optimization: Instead of starting a thread for every node, just check the paths.  If the paths are different (i.e the node is incorrect), then start a thread.
 Housekeeping: Cleaned out the print statements from node calculations.
 
-Version 1.07.0 - Current Version
+Version 1.07.0
 ------------
 Fix: Seeds are placed correctly.
 
+Version 1.07.1 - Current Version
+------------
 
 
 
@@ -52,18 +54,24 @@ Fix: Seeds are placed correctly.
 
 Backlog
 -------
-Fix: Seeds are placed correctly.
-Optimization: Switch graph backend to igraph and use OpenMP
+
 Fix: Accumulate the loss instead of calculating it all at once.
-Feature: Layer the transparent segmentations and the original image for better visualization.
-Feature: Added "constrained_msf" property in the watershed class.
-Fix: Correct nodes and accuracy are not ouputing the correct values.
+Feature: Layer the transparent segmentation and the original image for better visualization.
+Fix: Correct nodes and accuracy are not computing the correct values.
 Feature: Switch segmentation data to Cremi Electron Microscopy Images.
 Housekeeping: Switch functions and classes from the jupyter notebook to a python file.
-Housekeeping: remove old graph visulaization tools.  They were to memory intensive.
+Housekeeping: remove old graph visualization tools.  They were to memory intensive.
+Feature: Accuracy output.
 
 
 Known problems
 --------------
 * Computing the root error edge children still takes way too long and needs to be optimized.
 * Computing the loss with all root error edges at a time uses too much memory and crashes the program.
+
+
+
+Optimize pipeline. Goal: 300x300 1 epoch in 30 mins.
+Test on 512x512 and time it.
+Ground truth cuts on cremi
+Switch to cremi and train.
