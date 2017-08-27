@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import cv2
 import threading
 import math
+import BachNet
+import ChopinNet
 from heapq import heappush, heappop
 from sklearn import feature_extraction
 
@@ -54,7 +56,7 @@ def crop_2d(image, top_left_corner, height, width):
     return image[x_start:x_end, y_start:y_end, ...]
 
 
-def prims_initialize(graph):
+def prims_initialize(img):
 
     """
 
@@ -64,6 +66,8 @@ def prims_initialize(graph):
     Returns:
 
     """
+
+    graph = img_to_graph(img)
 
     assignment_dict = dict()
     assignment_history = dict()
@@ -78,7 +82,7 @@ def prims_initialize(graph):
     return graph
 
 
-def gradient_segmentation(graph, seeds):
+def minimum_spanning_forest(graph, seeds):
     """
 
     Args:
@@ -89,7 +93,9 @@ def gradient_segmentation(graph, seeds):
         A list of ground truth cuts.
     """
 
-    nodes = graph.nodes()
+    num_nodes = graph.number_of_nodes()
+    visited = []
+    frontier = []
 
     push = heappush
     pop = heappop
@@ -97,15 +103,13 @@ def gradient_segmentation(graph, seeds):
     print("Starting gradient segmentation...")
     start = time.time()
 
-    while nodes:
-        frontier = []
-        visited = []
+    while len(visited) < num_nodes:
+
         for u in seeds:
 
             # Assign seed to self.
             graph.node[u]['seed'] = u
 
-            nodes.remove(u)
             visited.append(u)
 
             # Store path.
@@ -113,6 +117,12 @@ def gradient_segmentation(graph, seeds):
 
             # Push all edges
             for u, v in graph.edges(u):
+                graph.edge[u][v]['weight'] = graph.node[v]['altitude']
+                try:
+                    graph.edge[u][v]['image'] = graph.node[v]['image']
+                except KeyError:
+                    pass
+
                 push(frontier, (graph[u][v].get('weight', 1), u, v))
 
         while frontier:
@@ -128,30 +138,21 @@ def gradient_segmentation(graph, seeds):
             graph.node[v]['path'] = graph.node[u]['path'] + [v]
 
             visited.append(v)
-            nodes.remove(v)
+
             for v, w in graph.edges(v):
                 if not w in visited:
+                    graph.edge[v][w]['weight'] = graph.node[w]['altitude']
+                    try:
+                        graph.edge[v][w]['image'] = graph.node[w]['image']
+                    except KeyError:
+                        pass
                     push(frontier, (graph[v][w].get('weight', 1), v, w))
 
-    end = time.time()
-    print("Segmentation done: %fs" % (end - start))
 
-    print("Calculating Cuts...")
-    start = time.time()
+        end = time.time()
+        print("Segmentation done: %fs" % (end - start))
 
-    cuts = []
-
-    [cuts.append(e) if graph.node[e[0]]['seed'] \
-    is not graph.node[e[1]]['seed'] else '' for e in \
-    graph.edges_iter()]
-
-    end = time.time()
-    print("Done: %fs" % (end - start))
-
-    paths = nx.get_node_attributes(graph, 'path')
-
-
-    return cuts, paths
+        return graph
 
 
 def view_path(image, path):
@@ -186,15 +187,20 @@ def prepare_input_images(image, height=15, width=15):
         image (numpy.array):
     """
 
+    # Standardize input
+    if len(image.shape) == 2:
+        image = np.expand_dims(image, axis=2)
+
+
     npad = ((height // 2, width // 2), (height // 2, width // 2), (0, 0))
     padded_image = np.pad(image, npad, 'reflect')
 
-    image_dict = {}
+    images = []
 
     for index in np.ndindex(image.shape[:-1]):
-        image_dict[index] = crop_2d(padded_image, index, height, width)
+       images.append(crop_2d(padded_image, index, height, width))
 
-    return image_dict
+    return np.stack(images)
 
 
 def compute_root_error_edge_children(shortest_paths, ground_truth_paths, cut_edges, ground_truth_cuts):
@@ -389,40 +395,79 @@ def create_batches(x, y, max_batch_size=32):
     return zip(x, y)
 
 
-def generate_gt_cuts(ground_truth_segmentation):
-    """
-    Given a numpy array containing the neuron ids for a CREMI neural segmentation image,
-    this function returns the ground segmentation image where a segmentation boundary
-    is a white pixel and everything else is a black pixel.
+def generate_gt_cuts(gt_image, seeds, assignments=False):
+    graph = img_to_graph(gt_image)
 
-    Args:
-        ground_truth_segmentation: A numpy array containing the neuron ids of a segmentation image.
+    for (x, y), d in np.ndenumerate(gt_image):
+        graph.node[(x, y)]['altitude'] = d
 
-    Returns:
-        A numpy array of ground truth segmentations.
+    graph = minimum_spanning_forest(graph, seeds)
 
-    """
+    cuts = get_cut_edges(graph)
 
-    gt_cuts = []
+    if assignments:
+        for (x, y), d in np.ndenumerate(gt_image):
+            graph.node[(x, y)]['altitude'] = d
 
-    edges_right = ground_truth_segmentation[:, :-1].ravel() != ground_truth_segmentation[:, 1:].ravel()
-    edges_down = ground_truth_segmentation[:-1].ravel() != ground_truth_segmentation[1:].ravel()
+        gt_assignments = nx.get_node_attributes(graph, 'seed')
 
-    edges_down = edges_down.reshape((ground_truth_segmentation.shape[0] - 1, ground_truth_segmentation.shape[1]))
-    edges_right = edges_right.reshape((ground_truth_segmentation.shape[0], ground_truth_segmentation.shape[1] - 1))
-
-    for index, x in np.ndenumerate(edges_down):
-        if x:
-            gt_cuts.append(((index), (index[0] + 1, index[1])))
-
-    for index, x in np.ndenumerate(edges_right):
-        if x:
-            gt_cuts.append(((index), (index[0], index[1] + 1)))
-
-    return gt_cuts
+        return cuts, gt_assignments
+    else:
+        return cuts
 
 
+def get_spaced_colors(n):
+    max_value = 16581375  # 255**3
+    interval = int(max_value / n)
+    colors = [hex(I)[2:].zfill(6) for I in range(0, max_value, interval)]
+
+    return [(int(i[:2], 16), int(i[2:4], 16), int(i[4:], 16)) for i in colors]
 
 
+def assignments(img, graph, seeds):
+    assignment_mask = np.zeros((img.shape[0], img.shape[1], 3))
+
+    colors = get_spaced_colors(len(seeds) + 1)
+
+    for node, d in graph.nodes_iter(data=True):
+        seed = d['seed']
+        try:
+            assignment_mask[node] = colors[seeds.index(seed) + 1]
+        except ValueError:
+            assignment_mask[node] = colors[0]
+
+    return assignment_mask
 
 
+def transparent_mask(img, segmentations, alpha=0.5):
+
+    output = img.copy()
+    output = cv2.cvtColor(output,cv2.COLOR_GRAY2RGB)
+
+    segmentations = segmentations.astype('uint8')
+    overlay = segmentations
+
+    output = cv2.addWeighted(overlay, alpha, output, 1 - alpha,
+                    0, output)
+
+    return output
+
+
+def get_cut_edges(graph):
+    cuts = []
+
+    for u, v in graph.edges_iter():
+        if graph.node[u]['seed'] is not graph.node[v]['seed']:
+            cuts.append((u, v))
+
+    return cuts
+
+
+def accuracy(assignments, gt_assignments):
+    correct = 0
+
+    for k, v in assignments.iteritems():
+        if v == gt_assignments[k]:
+            correct += 1
+
+    return correct / len(assignments)
