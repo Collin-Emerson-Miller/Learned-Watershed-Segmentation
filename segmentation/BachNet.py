@@ -10,9 +10,11 @@ class BachNet:
     def __init__(self):
         pass
 
-    def _build(self, width, height, channels,  first_layer_num_of_filters=32, first_layer_kernel_size=(5, 5),
+    def build(self, width, height, channels,  first_layer_num_of_filters=32, first_layer_kernel_size=(5, 5),
               first_layer_strides=3, second_layer_num_of_filters=256, second_layer_kernel_size=(3, 3),
               second_layer_strides=2):
+
+        self.receptive_field_shape = (width, height)
 
         self.model = Sequential()
 
@@ -38,21 +40,9 @@ class BachNet:
                       optimizer='rmsprop',
                       metrics=['accuracy'])
 
-    def boundary_probabilities(self, image, batch_size=32, width=15, height=15, channels=1, verbose=0):
+    def boundary_probabilities(self, image, batch_size=32, width=23, height=23, verbose=0):
 
-        K.clear_session()
-        self.model = None
-        self._build(width=width, height=height, channels=channels)
-
-        try:
-            self.model = load_model('saved_model/Bach/model.h5')
-        except IOError:
-            self._build(width, height, 1)
-            self.model.save('saved_model/Bach/model.h5')
-
-        images = utils.prepare_input_images(image)
-
-        print("Starting boundary predictions")
+        images = utils.prepare_input_images(image, width=width, height=height)
 
         probabilities = self.model.predict(images, batch_size=batch_size,
                                            verbose=verbose)
@@ -60,3 +50,11 @@ class BachNet:
         probabilities = np.reshape(probabilities, image.shape)
 
         return probabilities
+
+    def load_model(self):
+        try:
+            self.model = load_model('saved_model/Bach/model.h5')
+        except IOError:
+            print("Could not find model. Creating a new one.")
+            self.build(self.receptive_field_shape[0], self.receptive_field_shape[1], 1)
+            self.model.save('saved_model/Bach/model.h5')

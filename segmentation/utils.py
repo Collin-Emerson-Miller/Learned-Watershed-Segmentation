@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import cv2
 import threading
 import math
-import BachNet
-import ChopinNet
 from heapq import heappush, heappop
 from sklearn import feature_extraction
 
@@ -83,15 +81,6 @@ def prims_initialize(img):
 
 
 def minimum_spanning_forest(graph, seeds):
-    """
-
-    Args:
-        image: An image in which to generate the ground truth cuts.
-        seeds: A list of seeds or starting points.
-
-    Returns:
-        A list of ground truth cuts.
-    """
 
     num_nodes = graph.number_of_nodes()
     visited = []
@@ -149,10 +138,10 @@ def minimum_spanning_forest(graph, seeds):
                     push(frontier, (graph[v][w].get('weight', 1), v, w))
 
 
-        end = time.time()
-        print("Segmentation done: %fs" % (end - start))
+    end = time.time()
+    print("Segmentation done: %fs" % (end - start))
 
-        return graph
+    return graph
 
 
 def view_path(image, path):
@@ -179,7 +168,12 @@ def view_boundaries(image, cuts):
     plt.imshow(img)
 
 
-def prepare_input_images(image, height=15, width=15):
+def pad_for_window(img, height, width, padding_type='reflect'):
+    npad = ((height // 2, width // 2), (height // 2, width // 2), (0, 0))
+    return np.pad(img, npad, padding_type)
+
+
+def prepare_input_images(img, height=15, width=15):
     """
     Preprocess images to be used in the prediction of the edges.
 
@@ -188,16 +182,14 @@ def prepare_input_images(image, height=15, width=15):
     """
 
     # Standardize input
-    if len(image.shape) == 2:
-        image = np.expand_dims(image, axis=2)
+    if len(img.shape) == 2:
+        img = np.expand_dims(img, axis=2)
 
-
-    npad = ((height // 2, width // 2), (height // 2, width // 2), (0, 0))
-    padded_image = np.pad(image, npad, 'reflect')
+    padded_image = pad_for_window(img, height, width)
 
     images = []
 
-    for index in np.ndindex(image.shape[:-1]):
+    for index in np.ndindex(img.shape[:-1]):
        images.append(crop_2d(padded_image, index, height, width))
 
     return np.stack(images)
@@ -376,7 +368,7 @@ def find_missing_cut(shortest_path, ground_truth_cuts, cut_edges):
             continue
 
 
-def create_batches(x, y, max_batch_size=32):
+def create_batches(x, max_batch_size=32):
     """
 
     Args:
@@ -390,13 +382,12 @@ def create_batches(x, y, max_batch_size=32):
 
     batches = math.ceil(x.shape[0] / max_batch_size)
     x = np.array_split(x, batches)
-    y = np.array_split(y, batches)
 
-    return zip(x, y)
+    return x
 
 
 def generate_gt_cuts(gt_image, seeds, assignments=False):
-    graph = img_to_graph(gt_image)
+    graph = prims_initialize(gt_image)
 
     for (x, y), d in np.ndenumerate(gt_image):
         graph.node[(x, y)]['altitude'] = d
