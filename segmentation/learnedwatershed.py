@@ -24,15 +24,31 @@ def segment(img, presegmentations):
         A `numpy` array of segmentation ids.
     """
 
+    '''
+    A temporary folder is created so that the seed generation command can be run on an image.
+    Therefore, if that temp folder already exists, then it must be deleted.
+    '''
     if os.path.exists('temp'):
         shutil.rmtree('temp')
 
     os.makedirs('temp')
 
+    '''
+    Now that the temp folder has been made, the seeds can be generated on the image.
+    '''
+
     plt.imsave("temp/presegmentaitons.png", presegmentations)
     seeds = preprocessing_utils.generate_seeds(presegmentations, 'temp/')
 
     shutil.rmtree('temp')
+
+    '''
+    After the seeds are generated, the segmentation process can start.
+    '''
+
+    '''
+    Now that the segmentation is complete, the segment ids can be returned.
+    '''
     return("Done!")
 
 
