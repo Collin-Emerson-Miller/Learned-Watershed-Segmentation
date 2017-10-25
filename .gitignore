@@ -1,0 +1,12 @@
+segmentation/data/test
+segmentation/data/train/input/*
+segmentation/data/train/bach/*
+segmentation/data/train/chopin/*
+segmentation/data/cremi_data
+segmentation/Learned_Watershed.ipynb
+segmentation/.ipynb
+segmentation/Plotting.ipynb
+segmentation/Test_Chopin.ipynb
+segmentation/models/saved_models
+segmentation/Drawing_Board.ipynb
+segmentation/images_to_train.txt

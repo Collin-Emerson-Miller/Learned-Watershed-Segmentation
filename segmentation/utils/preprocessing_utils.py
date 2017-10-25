@@ -12,7 +12,7 @@ import math
 import matplotlib.pyplot as plt
 
 
-def load_image(foldername, name, img_path, gt_path):
+def load_image(foldername, img_path, gt_path):
     
     if os.path.exists(foldername):
         shutil.rmtree(foldername)
@@ -27,7 +27,13 @@ def load_image(foldername, name, img_path, gt_path):
 
     seeds = generate_seeds(gt_path, foldername)
     
-    return img, gt, seeds
+    labels_path = os.path.join(foldername, "labels.png")
+    
+    labels = cv2.imread(labels_path, 0)
+    
+    gt_cuts = get_gt_cuts(labels)
+    
+    return img, gt, gt_cuts, seeds
 
 
 def generate_seeds(image_path, output_path):
@@ -40,22 +46,41 @@ def generate_seeds(image_path, output_path):
     Returns:
         A list of seeds.
     """
-
-    print(image_path, output_path)
-
-    os.system("gmic -v -1 " + image_path + " -channels 1 -threshold 10% -negative -label_fg 0,0 -o -.asc | tail -n +2 | awk '{ for (i = 1; i<=NF; i++) {x[$i] += i; y[$i] += NR; n[$i]++; } } END { for (v in x) print x[v]/n[v],y[v]/n[v] }' > " + output_path + "/seeds.txt")
+    
+    seed_path = os.path.join(output_path, "seeds.txt")
+    labels_path = os.path.join(output_path, "labels.png")
+    
+    os.system("gmic -v -1 " + image_path + " -negate -label_fg 0,0 -dilate_circ 6 -o " + labels_path + " -o -.asc | tail -n +2 | awk '{ for (i = 1; i<=NF; i++) {x[$i] += i; y[$i] += NR; n[$i]++; } } END { for (v in x) { if (v>0) print v,x[v]/n[v],y[v]/n[v] }}' > " + seed_path + "")
 
     seeds = []
     f = open(output_path + "/seeds.txt", 'r')
     for line in f:
-        y = int(float(re.split(' ', line)[0]))
-        x = int(float(re.split(' ', line)[1]))
+        y = int(float(re.split(' ', line)[1]))
+        x = int(float(re.split(' ', line)[2]))
         seed = (x - 1, y - 1)
         seeds.append(seed)
 
-    return seeds[1:]
+    return seeds[:]
 
 
+def get_gt_cuts(labels):
+    edges_right = labels[:, :-1].ravel() != labels[:, 1:].ravel()
+    edges_down = labels[:-1].ravel() != labels[1:].ravel()
+
+    edges_down = edges_down.reshape((labels.shape[0] - 1, labels.shape[1]))
+    edges_right = edges_right.reshape((labels.shape[0], labels.shape[1] - 1))
+
+    ground_truth_cuts = []
+
+    for index, x in np.ndenumerate(edges_down):
+        if x:
+            ground_truth_cuts.append(((index), (index[0] + 1, index[1])))
+
+    for index, x in np.ndenumerate(edges_right):
+        if x:
+            ground_truth_cuts.append(((index), (index[0], index[1] + 1)))
+            
+    return ground_truth_cuts
 
 
 def crop_2d(image, top_left_corner, height, width):
@@ -91,7 +116,7 @@ def pad_for_window(img, height, width, padding_type='reflect'):
 # In[ ]:
 
 
-def prepare_input_images(img, height=15, width=15):
+def prepare_input_images(img, height=23, width=23):
     """
     Preprocess images to be used in the prediction of the edges.
 

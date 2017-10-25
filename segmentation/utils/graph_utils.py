@@ -8,7 +8,8 @@ import threading
 import time
 
 
-from heapq import heappush, heappop
+from heapq import heappush as push
+from heapq import heappop as pop
 from sklearn import feature_extraction
 
 
@@ -87,7 +88,7 @@ def prims_initialize(img):
 # In[ ]:
 
 
-def minimum_spanning_forest(graph, seeds, timed=False):
+def minimum_spanning_forest(img, graph, seeds, timed=False):
     """Computes the minimum spanning forest for an image.
     
     This function computes the minimum spanning forest 
@@ -113,65 +114,50 @@ def minimum_spanning_forest(graph, seeds, timed=False):
     
     
     num_nodes = graph.number_of_nodes()
-    visited = []
+    visited = np.zeros(img.shape)
     frontier = []
-
-    push = heappush
-    pop = heappop
 
     if timed:         
         print("Starting gradient segmentation...")
         start = time.time()
 
-    while len(visited) < num_nodes:
+    for u in seeds:
 
-        for u in seeds:
+        # Assign seed to self.
+        graph.node[u]['seed'] = u
 
-            # Assign seed to self.
-            graph.node[u]['seed'] = u
+        visited[u[0], u[1]] = 1
 
-            visited.append(u)
+        # Store path.
+        graph.node[u]['path'] = [u]
 
-            # Store path.
-            graph.node[u]['path'] = [u]
+        # Push all edges
+        for u, v in graph.edges(u):
+            push(frontier, (graph[u][v].get('weight', 1), u, v))
 
-            # Push all edges
-            for u, v in graph.edges(u):
-                try:
-                    graph.edge[u][v]['image'] = graph.node[v]['image']
-                except KeyError:
-                    pass
+    while frontier:
+        W, u, v = pop(frontier)
 
-                push(frontier, (graph[u][v].get('weight', 1), u, v))
+        if visited[v[0], v[1]] == 1:
+            continue
 
-        while frontier:
-            W, u, v = pop(frontier)
+        # Assign the node
+        graph.node[v]['seed'] = graph.node[u]['seed']
 
-            if v in visited:
-                continue
+        # Store path.
+        graph.node[v]['path'] = graph.node[u]['path'] + [v]
 
-            # Assign the node
-            graph.node[v]['seed'] = graph.node[u]['seed']
+        visited[v[0], v[1]] = 1
 
-            # Store path.
-            graph.node[v]['path'] = graph.node[u]['path'] + [v]
-
-            visited.append(v)
-
-            for v, w in graph.edges(v):
-                if not w in visited:
-                    try:
-                        graph.edge[v][w]['image'] = graph.node[w]['image']
-                    except KeyError:
-                        pass
-                    push(frontier, (graph[v][w].get('weight', 1), v, w))
+        for v, w in graph.edges(v):
+            if visited[w[0], w[1]] == 0:
+                push(frontier, (graph[v][w].get('weight', 1), v, w))
 
     if timed:
         end = time.time()
         print("Segmentation done: %fs" % (end - start))
 
     return graph
-
 
 # In[ ]:
 
@@ -386,7 +372,7 @@ def generate_gt_cuts(gt_image, seeds, assignments=False):
     for (x, y), d in np.ndenumerate(gt_image):
         graph.node[(x, y)]['altitude'] = d
 
-    graph = minimum_spanning_forest(graph, seeds)
+    graph = minimum_spanning_forest(gt_image, graph, seeds)
 
     cuts = get_cut_edges(graph)
 

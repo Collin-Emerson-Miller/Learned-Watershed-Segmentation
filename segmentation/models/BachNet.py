@@ -1,5 +1,5 @@
 import numpy as np
-import utils
+from utils import preprocessing_utils
 from keras.models import Sequential, load_model
 from keras.layers import Conv2D
 from keras.layers import Flatten, Dense
@@ -10,12 +10,14 @@ class BachNet:
     def __init__(self):
         pass
 
-    def build(self, width, height, channels,  first_layer_num_of_filters=32, first_layer_kernel_size=(5, 5),
+    def build(self, receptive_field_shape, channels,  first_layer_num_of_filters=32, first_layer_kernel_size=(5, 5),
               first_layer_strides=3, second_layer_num_of_filters=256, second_layer_kernel_size=(3, 3),
               second_layer_strides=2):
 
-        self.receptive_field_shape = (width, height)
-
+        self.receptive_field_shape = receptive_field_shape
+        height = receptive_field_shape[0]
+        width = receptive_field_shape[1]
+           
         self.model = Sequential()
 
         # Layer 1
@@ -37,12 +39,13 @@ class BachNet:
         # categorical_crossentropy
         # sparse_categorical_crossentropy
         self.model.compile(loss='binary_crossentropy',
-                      optimizer='rmsprop',
+                      optimizer='adam',
                       metrics=['accuracy'])
 
-    def boundary_probabilities(self, image, batch_size=32, width=23, height=23, verbose=0):
+    def boundary_probabilities(self, image, batch_size=32, verbose=0):
 
-        images = utils.prepare_input_images(image, width=width, height=height)
+        images = preprocessing_utils.prepare_input_images(image, width=self.receptive_field_shape[0],
+                                                          height=self.receptive_field_shape[1])
 
         probabilities = self.model.predict(images, batch_size=batch_size,
                                            verbose=verbose)
