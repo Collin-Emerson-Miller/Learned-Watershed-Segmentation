@@ -1,7 +1,7 @@
-segmentation/data/test
-segmentation/data/train/input/
-segmentation/data/train/bach/
-segmentation/data/train/chopin/
+segmentation/data/test/*
+segmentation/data/train/input/*
+segmentation/data/train/bach/*
+segmentation/data/train/chopin/*
 segmentation/data/cremi_data
 segmentation/Learned_Watershed.ipynb
 segmentation/.ipynb
