@@ -10,6 +10,7 @@ import shutil
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from utils import display_utils
 
 
 def load_image(foldername, img_path, gt_path):
@@ -22,8 +23,7 @@ def load_image(foldername, img_path, gt_path):
     img = cv2.imread(img_path, 0)
     gt = cv2.imread(gt_path, 0)
     
-    plt.imsave(os.path.join(foldername, "img"), img, cmap='gray')
-    plt.imsave(os.path.join(foldername, "gt"), gt, cmap='gray')    
+    plt.imsave(os.path.join(foldername, "img.png"), img, cmap='gray')        
 
     seeds = generate_seeds(gt_path, foldername)
     
@@ -32,7 +32,11 @@ def load_image(foldername, img_path, gt_path):
     labels = cv2.imread(labels_path, 0)
     
     gt_cuts = get_gt_cuts(labels)
+
+    gt = display_utils.view_boundaries(np.zeros_like(img), gt_cuts)
     
+    plt.imsave(os.path.join(foldername, "gt.png"), gt, cmap='gray')
+
     return img, gt, gt_cuts, seeds
 
 
@@ -50,7 +54,7 @@ def generate_seeds(image_path, output_path):
     seed_path = os.path.join(output_path, "seeds.txt")
     labels_path = os.path.join(output_path, "labels.png")
     
-    os.system("gmic -v -1 " + image_path + " -negate -label_fg 0,0 -dilate_circ 6 -o " + labels_path + " -o -.asc | tail -n +2 | awk '{ for (i = 1; i<=NF; i++) {x[$i] += i; y[$i] += NR; n[$i]++; } } END { for (v in x) { if (v>0) print v,x[v]/n[v],y[v]/n[v] }}' > " + seed_path + "")
+    os.system("gmic -v -1 " + image_path + " -negate -channels 1 -label_fg 0,0 -dilate_circ 6 -o " + labels_path + " -o -.asc | tail -n +2 | awk '{ for (i = 1; i<=NF; i++) {x[$i] += i; y[$i] += NR; n[$i]++; } } END { for (v in x) { if (v>0) print v,x[v]/n[v],y[v]/n[v] }}' > " + seed_path + "")
 
     seeds = []
     f = open(output_path + "/seeds.txt", 'r')

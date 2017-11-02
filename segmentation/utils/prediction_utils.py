@@ -50,18 +50,18 @@ def input_generator(bach, train_path, input_path, tag):
                                         image_path,
                                         gt_path) 
         
-        seed_image = cv2.cvtColor(gt,cv2.COLOR_GRAY2RGB)
+        seed_image = gt
 
         for x, y in seeds:
             seed_image[x, y] = [255, 0, 0]
 
-        plt.imsave(os.path.join(foldername, "seed_image"), seed_image, cmap='gray')
+        plt.imsave(os.path.join(foldername, "seed_image.png"), seed_image, cmap='gray')
 
         bps = bach.boundary_probabilities(img)
         
         I_a = np.stack((img, bps), axis=-1)
 
-        plt.imsave(os.path.join(train_path, "bach", f_name), bps, cmap='gray')
+        plt.imsave(os.path.join(train_path, "bach", f_name + ".png"), bps, cmap='gray')
             
         yield f_name, img, bps, I_a, gt, gt_cuts, seeds
     

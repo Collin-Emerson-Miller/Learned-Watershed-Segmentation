@@ -253,8 +253,7 @@ def find_root_edge(shortest_path,
     ground_truth_seed = ground_truth_path[0]
 
     # Compute the root edge to increase (p(w)).
-    root_missing_cut_edge = find_missing_cut(shortest_path, ground_truth_cuts,
-                                             cut_edges)
+    root_missing_cut_edge = find_missing_cut(shortest_path, ground_truth_cuts)
 
     # Increment the number of children for the root edge.
     try:
@@ -316,7 +315,7 @@ def find_first_false_cut(ground_truth_path, ground_truth_cuts, cut_edges):
 # In[ ]:
 
 
-def find_missing_cut(shortest_path, ground_truth_cuts, cut_edges):
+def find_missing_cut(shortest_path, ground_truth_cuts):
     """
     Computes the root error missing cut of a shortest path.
 
@@ -326,22 +325,16 @@ def find_missing_cut(shortest_path, ground_truth_cuts, cut_edges):
     Args:
         shortest_path (list): The list of edges in the shortest path.
         ground_truth_cuts (list): The list ground truth cuts for the ground truth segmentation.
-        cut_edges (list): The list of cut edges from the current segmentation.
 
     Returns:
         tuple: The first erroneous cut edge in the shortest path.
     """
 
-    for i, node in enumerate(shortest_path):
-        try:
-            edge = (shortest_path[i], shortest_path[i + 1])
-            if edge in ground_truth_cuts or tuple(reversed(edge)) in ground_truth_cuts:
-                if edge not in cut_edges and tuple(reversed(edge)) not in cut_edges:
-                    return edge
-
-        except IndexError:
-            print("No Missing Cut.")
-            continue
+    for i, node in enumerate(xrange(len(shortest_path) - 1)):
+        u = shortest_path[i]
+        v = shortest_path[i+1]
+        if (u, v) in ground_truth_cuts or (v, u) in ground_truth_cuts:
+                return (u, v)
 
 def find_deviation(ground_truth_path, shortest_path):
     """
@@ -361,31 +354,6 @@ def find_deviation(ground_truth_path, shortest_path):
             return (ground_truth_path[i - 1], ground_truth_path[i])
     else:
         raise ValueError('No deviation.')
-
-
-# In[ ]:
-
-
-def generate_gt_cuts(gt_image, seeds, assignments=False):
-    graph = prims_initialize(gt_image)
-
-    for (x, y), d in np.ndenumerate(gt_image):
-        graph.node[(x, y)]['altitude'] = d
-
-    graph = minimum_spanning_forest(gt_image, graph, seeds)
-
-    cuts = get_cut_edges(graph)
-
-    if assignments:
-        for (x, y), d in np.ndenumerate(gt_image):
-            graph.node[(x, y)]['altitude'] = d
-
-        gt_assignments = nx.get_node_attributes(graph, 'seed')
-
-        return cuts, graph, gt_assignments
-    else:
-        return cuts
-
 
 # In[ ]:
 
