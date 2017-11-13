@@ -4,7 +4,6 @@ import keras
 import time
 import numpy as np
 import tensorflow as tf
-import utils
 import BachNet
 import os
 import networkx as nx
@@ -154,14 +153,14 @@ class Chopin:
                 self.sess.run(tf.global_variables_initializer())
                 save_path = saver.save(self.sess, filepath)
 
-    def save_model(self, filepath):
+    def save_model(self, filepath, global_step):
         saver = tf.train.Saver()
 
         with self.sess.as_default():
-            save_path = saver.save(self.sess, filepath)
+            save_path = saver.save(self.sess, filepath, global_step)
 
     def predicted_msf(self, I_a, graph, seeds):
-        num_nodes = graph.number_of_nodes()
+        msf = nx.Graph()
         visited = np.zeros(I_a.shape[:-1])
         frontier = []
 
@@ -171,143 +170,152 @@ class Chopin:
                                                       self.receptive_field_shape)
         static_input_images = preprocessing_utils.prepare_input_images(I_a, height=self.receptive_field_shape[0],
                                                                        width=self.receptive_field_shape[1])
-
         print("Starting gradient segmentation...")
         start = time.time()
 
-        for u in seeds:
+        for s in seeds:
 
-            # Assign seed to chopin.
-            graph.node[u]['seed'] = u
+            # Add node to MSF.
+            msf.add_node(s)
 
-            ra.assign_node(u, seeds.index(u))
+            # Assign seed to itself.
+            msf.node[s]['seed'] = s
+            ra.assign_node(s, seeds.index(s))
 
-            visited[u[0], u[1]] = 1
-
-            # Store path.
-            graph.node[u]['path'] = [u]
+            visited[s[0], s[1]] = 1
 
             # Push all edges
-            static_input = []
-            dynamic_input = []
-            edges = []
-            for u, v in graph.edges(u):
-                edges.append((u, v))
-                seed_index = seeds.index(graph.node[u]['seed'])
+            for u, v in graph.edges(s):
+                seed_index = seeds.index(msf.node[u]['seed'])
                 static_image = static_input_images[v[0] * I_a.shape[1] + v[1]]
-                dynamic_image = ra.prepare_images([(u, seed_index)])[0]
-                static_input.append(static_image)
-                dynamic_input.append(dynamic_image)
+                dynamic_image = ra.prepare_images([(v, seed_index)])[0]
+                static_image = np.expand_dims(static_image, 0)
+                dynamic_image = np.expand_dims(dynamic_image, 0)
+                altitude_value = self.predict_altitudes(static_image,
+                                                          dynamic_image)
+                graph.edge[u][v]['static_image'] = static_image
+                graph.edge[u][v]['dynamic_image'] = dynamic_image
+                graph.edge[u][v]['weight'] = altitude_value
 
-                try:
-                    graph.edge[u][v]['static_image'] = static_image
-                    graph.edge[u][v]['dynamic_image'] = dynamic_image
-                except KeyError:
-                    pass
-
-            static_input = np.stack(static_input)
-            dynamic_input = np.stack(dynamic_input)
-
-            altitude_values = self.predict_altitudes(static_input,
-                                                      dynamic_input)
-
-            for (u, v), alt in zip(edges, altitude_values):
-                graph.edge[u][v]['weight'] = alt[0]
-                push(frontier, (alt, u, v))
+                push(frontier, (graph.edge[u][v]['weight'], u, v))
 
         while frontier:
             W, u, v = pop(frontier)
 
-
+            # If the node is already visited, then skip assigning it.
             if visited[v[0], v[1]] == 1:
                 continue
 
+            msf.add_node(v)
+
+            # Add edge to MSF.
+            msf.add_edge(u, v, graph.get_edge_data(u, v))
+
             # Assign the node
-            graph.node[v]['seed'] = graph.node[u]['seed']
-
-            ra.assign_node(v, seeds.index(graph.node[u]['seed']))
-
-            # Store path.
-            graph.node[v]['path'] = graph.node[u]['path'] + [v]
+            msf.node[v]['seed'] = msf.node[u]['seed']
+            ra.assign_node(v, seeds.index(msf.node[u]['seed']))
 
             visited[v[0], v[1]] = 1
 
-
-            static_input = []
-            dynamic_input = []
-            edges = []
             for v, w in graph.edges(v):
                 if visited[w[0], w[1]] == 0:
-                    edges.append((v, w))
-                    seed_index = seeds.index(graph.node[v]['seed'])
+                    # Calculate the altitude of the edge.
+                    seed_index = seeds.index(msf.node[v]['seed'])
                     static_image = static_input_images[w[0] * I_a.shape[1] + w[1]]
-                    dynamic_image = ra.prepare_images([(v, seed_index)])[0]
-                    static_input.append(static_image)
-                    dynamic_input.append(dynamic_image)
-
-                    try:
-                        graph.edge[u][v]['static_image'] = static_image
-                        graph.edge[u][v]['dynamic_image'] = dynamic_image
-                    except KeyError:
-                        pass
-
-            try:
-                static_input = np.stack(static_input)
-                dynamic_input = np.stack(dynamic_input)
-
-                altitude_values = self.predict_altitudes(static_input,
-                                                          dynamic_input)
-
-                for (v, w), alt in zip(edges, altitude_values):
-                    graph.edge[v][w]['weight'] = alt[0]
-                    push(frontier, (alt, v, w))
-            except ValueError:
-                pass
+                    dynamic_image = ra.prepare_images([(w, seed_index)])[0]
+                    static_image = np.expand_dims(static_image, 0)
+                    dynamic_image = np.expand_dims(dynamic_image, 0)
+                    altitude_value = self.predict_altitudes(static_image,
+                                                              dynamic_image)
+                    graph.edge[v][w]['static_image'] = static_image
+                    graph.edge[v][w]['dynamic_image'] = dynamic_image
+                    graph.edge[v][w]['weight'] = altitude_value
+                    push(frontier, (altitude_value, v, w))
 
         end = time.time()
         print("Segmentation done: %fs" % (end - start))
 
-        return graph
+        return msf
+
+    def constrained_msf(self, I_a, graph, msf, seeds, gt_cuts):
+
+        constrained_msf = nx.Graph()
+
+        visited = np.zeros(I_a.shape[:-1])
+        frontier = []
+
+        print("Starting gradient segmentation...")
+        start = time.time()
+
+        for s in seeds:
+
+            # Add node to MSF.
+            constrained_msf.add_node(s)
+
+            # Assign seed to itself.
+            constrained_msf.node[s]['seed'] = s
+
+            visited[s[0], s[1]] = 1
+
+            # Push all edges
+            for u, v in graph.edges(s):
+                if (u, v) not in gt_cuts:
+                    push(frontier, (graph.edge[u][v]['weight'], u, v))
+
+        while frontier:
+            W, u, v = pop(frontier)
+
+            # If the node is already visited, then skip assigning it.
+            if visited[v[0], v[1]] == 1:
+                continue
+
+            constrained_msf.add_node(v)
+
+            # Add edge to MSF.msf
+            constrained_msf.add_edge(u, v, graph.get_edge_data(u, v))
+
+            # Assign the node
+            constrained_msf.node[v]['seed'] = constrained_msf.node[u]['seed']
+
+            visited[v[0], v[1]] = 1
+
+            for v, w in graph.edges(v):
+                if visited[w[0], w[1]] == 0:
+                    if (v, w) not in gt_cuts and (w, v) not in gt_cuts:
+                        push(frontier, (graph.edge[v][w]['weight'], v, w))
+
+        end = time.time()
+        print("Segmentation done: %fs" % (end - start))
+
+        return constrained_msf
     
-    def train_on_image(self, img, bps, I_a, gt, gt_cuts, seeds, graph):
+    def train_on_image(self, img, I_a, gt_cuts, seeds, graph):
         msf = self.predicted_msf(I_a, graph, seeds)
-        segmentations = display_utils.assignments(np.zeros_like(img), msf, seeds)
-
-        shortest_paths = nx.get_node_attributes(msf, 'path')
-        assignments = nx.get_node_attributes(msf, 'seed')
-        cuts = graph_utils.get_cut_edges(msf)
-
-        constrained_msf = msf.copy()
-
-        constrained_msf.remove_edges_from(gt_cuts)
-
-        constrained_msf = graph_utils.minimum_spanning_forest(img, constrained_msf, seeds)
-
-        ground_truth_paths = nx.get_node_attributes(constrained_msf, 'path')
+        cuts = graph_utils.get_cut_edges(graph, msf)
+        constrained_msf = self.constrained_msf(I_a, graph, msf, seeds, gt_cuts)
+        shortest_paths, ground_truth_paths = graph_utils.get_paths(graph, msf, constrained_msf)
 
         children = graph_utils.compute_root_error_edge_children(shortest_paths,
-                                                          ground_truth_paths, cuts,
-                                                          gt_cuts)
+                                                                ground_truth_paths, cuts,
+                                                                gt_cuts)
+
+        segmentations = display_utils.assignments(np.zeros_like(img), msf, seeds)
 
         weights = []
         static_images = []
         dynamic_images = []
 
         for (u, v), weight in children.iteritems():
-
-            try:
-                static_images.append(msf.get_edge_data(u, v)['static_image'])
-                dynamic_images.append(msf.get_edge_data(u, v)['dynamic_image'])
-                weights.append(weight)
-                altitude_val = msf.get_edge_data(u, v)['weight']
-            except KeyError:
-                pass
+            static_images.append(graph.get_edge_data(u, v)['static_image'])
+            dynamic_images.append(graph.get_edge_data(u, v)['dynamic_image'])
+            weights.append(weight)
+            altitude_val = graph.get_edge_data(u, v)['weight']
 
         batches = zip(preprocessing_utils.create_batches(np.expand_dims(np.stack(weights), 1)),
-                      preprocessing_utils.create_batches(np.stack(static_images)),
-                      preprocessing_utils.create_batches(np.stack(dynamic_images)))
+                      preprocessing_utils.create_batches(np.concatenate(static_images)),
+                      preprocessing_utils.create_batches(np.concatenate(dynamic_images)))
 
-
+        loss = 0
         with self.sess.as_default():
             self.sess.run(self.zero_ops)
 
@@ -317,160 +325,10 @@ class Chopin:
                              self.dynamic_input: d,
                              keras.backend.learning_phase(): 0}
 
-                self.sess.run(self.accum_ops, feed_dict)
-                loss = self.sess.run(self.loss, feed_dict)
-                loss = loss[0][0]
+                self.sess.run(
+                    self.accum_ops, feed_dict)
+                loss += self.sess.run(self.loss, feed_dict)[0][0]
 
             self.sess.run(self.train_step)
 
         return loss, segmentations, cuts
-    
-    
-    def fit(self, img, gt, seeds, foldername, epochs=8):
-        bach = BachNet.BachNet()
-
-        print("Starting boundary predictions")
-
-        boundary_probabilities = bach.boundary_probabilities(img, verbose=1)
-
-        I_a = np.stack((img, boundary_probabilities), axis=2)
-        I_a = utils.pad_for_window(I_a, self.receptive_field_shape[0], self.receptive_field_shape[1])
-
-        chopin = Chopin(self.receptive_field_shape)
-        chopin.build()
-
-        chopin.initialize_session()
-        chopin.load_model("saved_model/Chopin/model.ckpt")
-
-        graph = utils.prims_initialize(img)
-
-        ground_truth_cuts, gt_assignments = utils.generate_gt_cuts(gt, seeds, assignments=True)
-
-        loss_timeline = []
-        acc_timeline = []
-
-        for epoch in range(epochs):
-            print("Epoch: ", epoch)
-
-            msf = self.minimum_spanning_forest(I_a, graph, seeds)
-
-            segmentations = utils.assignments(img, msf, seeds)
-
-            shortest_paths = nx.get_node_attributes(msf, 'path')
-            assignments = nx.get_node_attributes(msf, 'seed')
-            cuts = utils.get_cut_edges(msf)
-
-            acc = utils.accuracy(assignments, gt_assignments)
-            print("Accuracy: ", acc)
-            acc_timeline.append(acc)
-
-            filename = "epoch_{}.png".format(epoch)
-
-            mask = utils.transparent_mask(img, segmentations)
-
-            plt.imsave(os.path.join(foldername, filename), mask)
-
-            constrained_msf = msf.copy()
-
-            constrained_msf.remove_edges_from(ground_truth_cuts)
-
-            constrained_msf = self.minimum_spanning_forest(constrained_msf, seeds)
-
-            ground_truth_paths = nx.get_node_attributes(constrained_msf, 'path')
-
-            children = utils.compute_root_error_edge_children(shortest_paths,
-                                                              ground_truth_paths, cuts,
-                                                              ground_truth_cuts)
-
-            weights = []
-            static_images = []
-            dynamic_images = []
-
-            loss = 0
-
-            for (u, v), weight in children.iteritems():
-                weights.append(weight)
-                static_images.append(msf.get_edge_data(u, v)['static_image'][0])
-                dynamic_images.append(msf.get_edge_data(u, v)['dynamic_image'][0])
-                altitude_val = msf.get_edge_data(u, v)['weight']
-
-                loss += weight * altitude_val
-
-            batches = zip(utils.create_batches(np.expand_dims(np.stack(weights), 1)),
-                          utils.create_batches(np.stack(static_images)),
-                          utils.create_batches(np.stack(dynamic_images)))
-
-            with chopin.sess.as_default():
-                chopin.sess.run(chopin.zero_ops)
-
-                for w, s, d in batches:
-                    feed_dict = {chopin.gradient_weights: w.transpose(),
-                                 chopin.static_input: s,
-                                 chopin.dynamic_input: d,
-                                 keras.backend.learning_phase(): 0}
-
-                    chopin.sess.run(chopin.accum_ops, feed_dict)
-
-                chopin.sess.run(chopin.train_step)
-
-
-
-            loss_timeline.append(loss)
-            print("Loss: ", loss)
-
-            f, axarr = plt.subplots(2, sharex=True)
-            axarr[0].plot(loss_timeline)
-            axarr[0].set_title("Loss")
-            axarr[1].plot(acc_timeline)
-            axarr[1].set_title("Accuracy")
-
-            figurname = "loss_and_accuracy"
-
-            plt.savefig(os.path.join(foldername, figurname))
-
-            chopin.save_model("saved_model/Chopin/model.ckpt")
-
-        chopin.sess.close()
-        gc.collect()
-
-        return segmentations, loss_timeline, acc_timeline
-
-    def evaluate(self, x, y):
-
-        bach = BachNet.BachNet()
-
-        print("Starting boundary predictions")
-
-        boundary_probabilities = bach.boundary_probabilities(x, verbose=1)
-
-        I_a = np.stack((x, boundary_probabilities), axis=2)
-        I_a = utils.pad_for_window(I_a, self.receptive_field_shape[0], self.receptive_field_shape[1])
-
-        chopin = Chopin(self.receptive_field_shape)
-        chopin.build()
-
-        chopin.initialize_session()
-        chopin.load_model("saved_model/Chopin/model.ckpt")
-
-        graph = utils.prims_initialize(x)
-
-        ground_truth_cuts, gt_assignments = utils.generate_gt_cuts(gt, seeds, assignments=True)
-
-        msf = self.minimum_spanning_forest(I_a, graph, seeds)
-
-        segmentations = utils.assignments(img, msf, seeds)
-
-        shortest_paths = nx.get_node_attributes(msf, 'path')
-        assignments = nx.get_node_attributes(msf, 'seed')
-        cuts = utils.get_cut_edges(msf)
-
-        acc = utils.accuracy(assignments, gt_assignments)
-        print("Accuracy: ", acc)
-
-    @property
-    def rgb_image(self):
-        return self._rgb
-
-    @property
-    def padded_rgb_image(self):
-        return self._padded_rgb

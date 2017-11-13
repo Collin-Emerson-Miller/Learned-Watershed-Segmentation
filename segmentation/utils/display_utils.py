@@ -14,7 +14,7 @@ def view_path(image, path):
 
     for x, y in path:
         img[x, y] = [0, 0, 255]
-    plt.imshow(img)
+    return img
 
 
 def view_boundaries(image, cuts):
@@ -41,13 +41,13 @@ def get_spaced_colors(n):
 def transparent_mask(img, segmentations, alpha=0.5):
 
     output = img.copy()
-    output = cv2.cvtColor(output,cv2.COLOR_GRAY2RGB)
+    if len(output) <= 2:
+    	output = cv2.cvtColor(output, cv2.COLOR_GRAY2RGB)
 
     segmentations = segmentations.astype('uint8')
     overlay = segmentations
-
     output = cv2.addWeighted(overlay, alpha, output, 1 - alpha,
-                    0, output)
+                0, output)
 
     return output
 

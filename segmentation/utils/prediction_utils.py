@@ -64,5 +64,3 @@ def input_generator(bach, train_path, input_path, tag):
         plt.imsave(os.path.join(train_path, "bach", f_name + ".png"), bps, cmap='gray')
             
         yield f_name, img, bps, I_a, gt, gt_cuts, seeds
-    
-    

@@ -19,6 +19,8 @@ def load_image(foldername, img_path, gt_path):
         shutil.rmtree(foldername)
 
     os.makedirs(foldername)
+
+    os.mkdir(os.path.join(foldername, "saved_models"))
     
     img = cv2.imread(img_path, 0)
     gt = cv2.imread(gt_path, 0)

@@ -207,11 +207,13 @@ def compute_root_error_edge_children(shortest_paths,
     # computation.  Each thread computes the root error edges
     # for a node.
     threads = []
-    
+
     for node, shortest_path in shortest_paths.items():
-        
-        if shortest_path != ground_truth_paths[node]:
-            
+
+        if len(shortest_path) == 1:
+            continue
+
+        if ground_truth_paths[node] != shortest_path:
             thread = threading.Thread(target=find_root_edge,
                                       args=[shortest_path,
                                             ground_truth_paths[node],
@@ -219,7 +221,7 @@ def compute_root_error_edge_children(shortest_paths,
                                             edge_error_weights])
             threads.append(thread)
             thread.start()
-            
+
     # Join threads
     [thread.join() for thread in threads]
 
@@ -227,7 +229,6 @@ def compute_root_error_edge_children(shortest_paths,
         print(("Done: %fs" % (time.time() - start_time)))
 
     return edge_error_weights
-
 
 # In[ ]:
 
@@ -358,14 +359,48 @@ def find_deviation(ground_truth_path, shortest_path):
 # In[ ]:
 
 
-def get_cut_edges(graph):
+def get_cut_edges(graph, msf):
     cuts = []
 
-    for u, v in graph.edges_iter():
-        if graph.node[u]['seed'] is not graph.node[v]['seed']:
+    for u, v, data in graph.edges_iter(data=True):
+        if msf.node[u]['seed'] != msf.node[v]['seed']:
             cuts.append((u, v))
 
     return cuts
+
+def path_alt(graph, path):
+    altitudes = []
+    for x in xrange(len(path) - 1):
+        u = path[x]
+        v = path[x+1]
+        weight = graph.edge[u][v]['weight']
+        altitudes.append(weight)
+    return max(altitudes)
+
+def get_paths(graph, msf, constrained_msf):
+
+    shortest_paths = {}
+    ground_truth_paths = {}
+
+    for node in graph.nodes_iter():
+        assigned_seed = msf.node[node]['seed']
+        ground_truth_seed = constrained_msf.node[node]['seed']
+
+        shortest_path = nx.shortest_path(msf, assigned_seed, node)
+        ground_truth_path = nx.shortest_path(constrained_msf, ground_truth_seed, node)
+
+        if shortest_path != ground_truth_path:
+            shortest_distance = path_alt(graph, shortest_path)
+            ground_truth_distance = path_alt(graph, ground_truth_path)
+
+            if ground_truth_distance < shortest_distance:
+                print("Red Flag!")
+                break
+
+        shortest_paths[node] = shortest_path
+        ground_truth_paths[node] = ground_truth_path
+
+    return shortest_paths, ground_truth_paths
 
 
 # In[ ]:
