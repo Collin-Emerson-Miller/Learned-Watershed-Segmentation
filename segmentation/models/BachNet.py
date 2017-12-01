@@ -59,5 +59,5 @@ class BachNet:
             self.model = load_model(model_path)
         except IOError:
             print("Could not find model. Creating a new one.")
-            self.build(self.receptive_field_shape[0], self.receptive_field_shape[1], 1)
+            self.build(self.receptive_field_shape, 1)
             self.model.save(model_path)

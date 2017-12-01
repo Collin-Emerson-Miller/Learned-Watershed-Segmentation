@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="381781ad-7800-42eb-92c7-8007769ab349" name="Default" comment="" />
+    <list default="true" id="381781ad-7800-42eb-92c7-8007769ab349" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/Learned_Watershed.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/.ipynb_checkpoints/Testing Metrics-checkpoint.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/Testing Metrics.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/create_test_files.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/ground_truth.h5" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/segmentations.h5" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/segmentation/testing/test_n_ids.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/Learned-Watershed-Segmentation.iml" afterPath="$PROJECT_DIR$/.idea/Learned-Watershed-Segmentation.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/segmentation/Drawing Board.ipynb" afterPath="$PROJECT_DIR$/segmentation/Drawing Board.ipynb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/segmentation/Train Chopin (Asynchronous).ipynb" afterPath="$PROJECT_DIR$/segmentation/Train Chopin (Asynchronous).ipynb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/segmentation/models/BachNet.py" afterPath="$PROJECT_DIR$/segmentation/models/BachNet.py" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,20 +29,9 @@
       <file leaf-file-name="preprocessing_utils.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/segmentation/utils/preprocessing_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="882">
-              <caret line="60" column="0" lean-forward="false" selection-start-line="60" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
-              <folding>
-                <marker date="1511657891509" expanded="true" signature="3414:3530" ph="&quot;&quot;&quot;Preprocess images to be used in the prediction of the edges....&quot;&quot;&quot;" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Learned_Watershed.ipynb" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/segmentation/Learned_Watershed.ipynb">
-          <provider selected="true" editor-type-id="ipnb-editor">
-            <state>
-              <selected id="14" />
+            <state relative-caret-position="2142">
+              <caret line="131" column="0" lean-forward="false" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -35,23 +39,33 @@
       <file leaf-file-name="graph_utils.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/segmentation/utils/graph_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6786">
+            <state relative-caret-position="6750">
               <caret line="387" column="0" lean-forward="false" selection-start-line="387" selection-start-column="0" selection-end-line="387" selection-end-column="0" />
               <folding>
                 <marker date="1511657891509" expanded="true" signature="11839:11840" ph="..." />
-                <marker date="1511657891509" expanded="true" signature="11896:12053" ph="..." />
-                <marker date="1511657891509" expanded="true" signature="11954:12014" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ChopinNet.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ChopinNet.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/segmentation/models/ChopinNet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="432">
-              <caret line="154" column="0" lean-forward="true" selection-start-line="154" selection-start-column="0" selection-end-line="154" selection-end-column="0" />
+            <state relative-caret-position="504">
+              <caret line="176" column="0" lean-forward="true" selection-start-line="176" selection-start-column="0" selection-end-line="176" selection-end-column="0" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BachNet.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/segmentation/models/BachNet.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="782">
+              <caret line="61" column="53" lean-forward="true" selection-start-line="61" selection-start-column="53" selection-end-line="61" selection-end-column="53" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -59,7 +73,7 @@
       <file leaf-file-name="prediction_utils.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/segmentation/utils/prediction_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="738">
+            <state relative-caret-position="630">
               <caret line="45" column="0" lean-forward="false" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
               <folding />
             </state>
@@ -112,6 +126,7 @@
         <option value="$PROJECT_DIR$/segmentation/utils/prediction_utils.py" />
         <option value="$PROJECT_DIR$/segmentation/utils/preprocessing_utils.py" />
         <option value="$PROJECT_DIR$/segmentation/models/ChopinNet.py" />
+        <option value="$PROJECT_DIR$/segmentation/models/BachNet.py" />
       </list>
     </option>
   </component>
@@ -137,7 +152,6 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -166,11 +180,12 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -335,7 +350,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1859" height="1092" extended-state="6" />
+    <frame x="63" y="-4" width="1857" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20301561" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -372,7 +387,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/segmentation/Pipeline.ipynb" />
     <entry file="file://$PROJECT_DIR$/TODO.txt" />
     <entry file="file://$PROJECT_DIR$/segmentation/Pipeline.ipynb" />
     <entry file="file://$PROJECT_DIR$/segmentation/utils/WatershedGraph.py" />
@@ -412,13 +426,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/segmentation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="10" column="25" lean-forward="false" selection-start-line="10" selection-start-column="25" selection-end-line="10" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/segmentation/segmentation.py" />
     <entry file="file://$PROJECT_DIR$/segmentation/utils/prediction_utils.ipynb" />
     <entry file="file://$PROJECT_DIR$/segmentation/utils/relative_assignments.ipynb" />
     <entry file="file://$PROJECT_DIR$/segmentation/temp/presegmentaitons.png" />
@@ -427,20 +435,8 @@
     <entry file="file://$PROJECT_DIR$/TODO.txt" />
     <entry file="file://$PROJECT_DIR$/segmentation/testing/test_n_ids.py" />
     <entry file="file://$PROJECT_DIR$/segmentation/utils/preprocessing_utils.ipynb" />
-    <entry file="file://$PROJECT_DIR$/segmentation/learnedwatershed.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="12" column="37" lean-forward="false" selection-start-line="12" selection-start-column="37" selection-end-line="12" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/Create Images_to_train.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/segmentation/learnedwatershed.py" />
+    <entry file="file://$PROJECT_DIR$/segmentation/Create Images_to_train.ipynb" />
     <entry file="file://$PROJECT_DIR$/testing/blahg.py" />
     <entry file="file://$PROJECT_DIR$/segmentation/train_chopin.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -450,63 +446,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/BachNet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/Untitled.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/images_to_train.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/ChopinNet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/BachNet.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/segmentation/Learned_Watershed.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="14" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/segmentation/BachNet.py" />
+    <entry file="file://$PROJECT_DIR$/segmentation/Untitled.ipynb" />
+    <entry file="file://$PROJECT_DIR$/segmentation/images_to_train.txt" />
+    <entry file="file://$PROJECT_DIR$/segmentation/ChopinNet.py" />
+    <entry file="file://$PROJECT_DIR$/segmentation/BachNet.ipynb" />
+    <entry file="file://$PROJECT_DIR$/segmentation/Learned_Watershed.ipynb" />
     <entry file="file://$PROJECT_DIR$/segmentation/utils/graph_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6786">
+        <state relative-caret-position="6750">
           <caret line="387" column="0" lean-forward="false" selection-start-line="387" selection-start-column="0" selection-end-line="387" selection-end-column="0" />
           <folding>
             <marker date="1511657891509" expanded="true" signature="11839:11840" ph="..." />
-            <marker date="1511657891509" expanded="true" signature="11896:12053" ph="..." />
-            <marker date="1511657891509" expanded="true" signature="11954:12014" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/segmentation/utils/prediction_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="738">
+        <state relative-caret-position="630">
           <caret line="45" column="0" lean-forward="false" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
           <folding />
         </state>
@@ -514,19 +472,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/segmentation/utils/preprocessing_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="882">
-          <caret line="60" column="0" lean-forward="false" selection-start-line="60" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
-          <folding>
-            <marker date="1511657891509" expanded="true" signature="3414:3530" ph="&quot;&quot;&quot;Preprocess images to be used in the prediction of the edges....&quot;&quot;&quot;" />
-          </folding>
+        <state relative-caret-position="2142">
+          <caret line="131" column="0" lean-forward="false" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/segmentation/models/ChopinNet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="154" column="0" lean-forward="true" selection-start-line="154" selection-start-column="0" selection-end-line="154" selection-end-column="0" />
+        <state relative-caret-position="504">
+          <caret line="176" column="0" lean-forward="true" selection-start-line="176" selection-start-column="0" selection-end-line="176" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/segmentation/models/BachNet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="782">
+          <caret line="61" column="53" lean-forward="true" selection-start-line="61" selection-start-column="53" selection-end-line="61" selection-end-column="53" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
