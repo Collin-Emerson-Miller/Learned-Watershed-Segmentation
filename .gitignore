@@ -7,8 +7,8 @@ segmentation/Learned_Watershed.ipynb
 segmentation/.ipynb
 segmentation/Plotting.ipynb
 segmentation/Test_Chopin.ipynb
-segmentation/models/saved_models/Bach
-segmentation/models/saved_models/Chopin
+segmentation/models/saved_models/Bach/*
+segmentation/models/saved_models/Chopin/*
 segmentation/Drawing_Board.ipynb
 segmentation/images_to_train.txt
 segmentation/testing/*

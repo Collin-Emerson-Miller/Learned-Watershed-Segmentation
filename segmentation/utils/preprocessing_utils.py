@@ -56,7 +56,7 @@ def generate_seeds(image_path, output_path):
     seed_path = os.path.join(output_path, "seeds.txt")
     labels_path = os.path.join(output_path, "labels.png")
     
-    os.system("gmic -v -1 " + image_path + " -negate -channels 1 -label_fg 0,0 -dilate_circ 6 -o " + labels_path + " -o -.asc | tail -n +2 | awk '{ for (i = 1; i<=NF; i++) {x[$i] += i; y[$i] += NR; n[$i]++; } } END { for (v in x) { if (v>0) print v,x[v]/n[v],y[v]/n[v] }}' > " + seed_path + "")
+    os.system("gmic -v -1 " + image_path + " -negate -label_fg 0,0 -dilate_circ 6 -o " + labels_path + " -o -.asc | tail -n +2 | awk '{ for (i = 1; i<=NF; i++) {x[$i] += i; y[$i] += NR; n[$i]++; } } END { for (v in x) { if (v>0) print v,x[v]/n[v],y[v]/n[v] }}' > " + seed_path + "")
 
     seeds = []
     f = open(output_path + "/seeds.txt", 'r')
