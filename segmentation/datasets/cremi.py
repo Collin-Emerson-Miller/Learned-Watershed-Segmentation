@@ -17,13 +17,16 @@ def get_data(dataset=0):
     """Returns the raw data and neuron ids.
     
     """
-    print(os.getcwd())
+    while os.getcwd().split(os.sep)[-1] != "Learned-Watershed-Segmentation":
+        os.chdir("..")
+        cwd = os.getcwd()
+    os.chdir(os.path.join("segmentation", "datasets"))
 
     if not os.path.exists(cremi_path):
         os.mkdir(cremi_path)
     
     url = cremi_train_urls[dataset]
-
+    
     file_name = os.path.join(cremi_path, url.split('/')[-1])
 
     if not os.path.exists(file_name) or (datasetutils.get_url_file_size(url) != os.path.getsize(file_name)):
