@@ -16,6 +16,10 @@ cremi_path = "cremi"
 def get_data(dataset=0):
     """Returns the raw data and neuron ids.
     
+    dataset 0 = A
+    dataset 1 = B
+    dataset 2 = c
+    
     """
     while os.getcwd().split(os.sep)[-1] != "Learned-Watershed-Segmentation":
         os.chdir("..")

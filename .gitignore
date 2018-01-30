@@ -14,4 +14,4 @@ segmentation/datasets/cremi/*
 segmentation/.ipynb_checkpoints/*
 segmentation/datasets/Untitled.ipynb
 segmentation/datasets/.ipynb_checkpoints/
-.idea
+.idea/*
