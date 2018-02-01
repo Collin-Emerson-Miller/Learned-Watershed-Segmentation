@@ -1,16 +1,15 @@
 from __future__ import print_function
+from __future__ import division
+
+import time
+from heapq import heappop as pop
+from heapq import heappush as push
 
 import keras
-import time
+import networkx as nx
 import numpy as np
 import tensorflow as tf
-import BachNet
-import os
-import networkx as nx
-import matplotlib.pyplot as plt
-import gc
-from heapq import heappush as push
-from heapq import heappop as pop
+from collections import Counter
 from utils import display_utils
 from utils import graph_utils
 from utils import preprocessing_utils
@@ -160,6 +159,7 @@ class Chopin:
             save_path = saver.save(self.sess, filepath, global_step)
 
     def predicted_msf(self, I_a, graph, seeds):
+        n_visited = 0
         msf = nx.Graph()
         visited = np.zeros(I_a.shape[:-1])
         frontier = []
@@ -181,6 +181,8 @@ class Chopin:
             # Assign seed to itself.
             msf.node[s]['seed'] = s
             ra.assign_node(s, seeds.index(s))
+            n_visited += 1
+            print(n_visited / visited.size)
 
             visited[s[0], s[1]] = 1
 
@@ -215,7 +217,13 @@ class Chopin:
             msf.node[v]['seed'] = msf.node[u]['seed']
             ra.assign_node(v, seeds.index(msf.node[u]['seed']))
 
+            # Mark as visited
             visited[v[0], v[1]] = 1
+
+            # Increment the number of visited nodes
+            if n_visited % 100 == 0:
+                n_visited += 1
+                print(n_visited, visited.size, n_visited / visited.size)
 
             for v, w in graph.edges(v):
                 if visited[w[0], w[1]] == 0:

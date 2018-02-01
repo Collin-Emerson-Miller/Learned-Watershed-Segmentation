@@ -14,6 +14,21 @@ from utils import display_utils
 
 
 def load_image(foldername, img_path, gt_path):
+    """
+    Load all of the necessary components for the algorithm to a folder.
+
+
+    To run prim's algorithm, a few things are needed:
+    seeds, the ground truth labels, and ground truth cuts.
+
+    Args:
+        foldername: The folder name to save the files to.
+        img_path: The path to the image to segment.
+        gt_path: The path of the ground truth image to segment.
+
+    Returns: 
+
+    """
     
     if os.path.exists(foldername):
         shutil.rmtree(foldername)
