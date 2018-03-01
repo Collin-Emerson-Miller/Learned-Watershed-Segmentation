@@ -26,7 +26,7 @@ def load_image(foldername, img_path, gt_path):
         img_path: The path to the image to segment.
         gt_path: The path of the ground truth image to segment.
 
-    Returns: 
+    Returns:
 
     """
     
