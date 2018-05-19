@@ -35,6 +35,7 @@ class Chopin:
         self.dynamic_input = tf.placeholder(tf.float32,
                                             shape=(None, self.receptive_field_shape[0],
                                                    self.receptive_field_shape[1], 3))
+        label_input = keras.layers.Input(shape=[None])
 
         # Static Body.
         static = keras.layers.Conv2D(16, 5, padding='same',
@@ -78,6 +79,8 @@ class Chopin:
         merge = keras.layers.concatenate([static, dynamic], 1)
 
         self.altitude = keras.layers.Dense(1024, activation='relu')(merge)
+        embedding1 = keras.layers.Embedding(1024, 64)(label_input)
+        altitude, state = keras.layers.GRU(64, return_state=True)(embedding1)
         self.altitude = keras.layers.BatchNormalization()(self.altitude)
         self.altitude = keras.layers.Dense(1, activation='elu')(self.altitude)
 

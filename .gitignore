@@ -15,3 +15,5 @@ segmentation/.ipynb_checkpoints/*
 segmentation/datasets/Untitled.ipynb
 segmentation/datasets/.ipynb_checkpoints/
 .idea/*
+
+*.png
